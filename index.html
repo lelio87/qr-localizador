@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportando ubicación...</title>
+</head>
+<body>
+  <h3>Registrando ubicación, esperá unos segundos...</h3>
+  <script>
+    const objeto = new URLSearchParams(window.location.search).get("objeto") || "Desconocido";
+    const ua = navigator.userAgent;
+    const endpoint = "https://script.google.com/macros/s/AKfycbyyRm2qw9Q7BEccqSAoyny9CRASQE-2beVME_-f8KApxP6EuVUzbP5Qod2g_mTo4eAF/exec"; // Reemplazar
+
+    function redirigir(lat, lon) {
+      const url = `${endpoint}?objeto=${encodeURIComponent(objeto)}&lat=${lat}&lon=${lon}&ua=${encodeURIComponent(ua)}`;
+      window.location.href = url;
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        pos => redirigir(pos.coords.latitude, pos.coords.longitude),
+        err => redirigir("No disponible", "No disponible")
+      );
+    } else {
+      redirigir("No soportado", "No soportado");
+    }
+  </script>
+</body>
+</html>
