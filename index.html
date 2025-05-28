@@ -9,7 +9,7 @@
   <script>
     const objeto = new URLSearchParams(window.location.search).get("objeto") || "Desconocido";
     const ua = navigator.userAgent;
-    const endpoint = "https://script.google.com/macros/s/AKfycbyP0Uz_Xzgvij247ZOcI4jDie9ew4_CMb9aQ8-Roup8UBIHe1j-Q2FLB1kWmKgR5W22/exec"; // Reemplazar
+    const endpoint = "https://script.google.com/macros/s/AKfycbyxUzvFi7V3mLnJksvdzkWu7PwKpkYKO378f095xqL6d7zt18gFrZaY7mxZ9MqibrlN/exec"; // Reemplazar
 
     function redirigir(lat, lon) {
       const url = `${endpoint}?objeto=${encodeURIComponent(objeto)}&lat=${lat}&lon=${lon}&ua=${encodeURIComponent(ua)}`;
