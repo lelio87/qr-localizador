@@ -3,49 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Registro de Ubicación</title>
+  <title>Registro de QR</title>
 </head>
 <body>
-  <h2>Registrando ubicación...</h2>
+  <h2>Registrando QR...</h2>
 
   <script>
     const objeto = new URLSearchParams(window.location.search).get("objeto") || "Desconocido";
     const ua = navigator.userAgent;
 
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzghDTpTlh78d1zSpO2vWFDAsJZwnEWBIOtyRl1c8yFHr58pA_wTtMlpz2txrwUpo9z/exec"; // ← Cambiá por tu URL
-    const redireccion = "https://instagram.com/lelio.87"; // ← Cambiá por tu URL
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyusbvLlQ6zNj24vevRcrO7koorvviibGKb5atfIherwQjhydyUMj_WOhRJuvPW8bk7/exec"; // 🔁 Cambiá por tu Web App URL
+    const redireccion = "https://instagram.com/lelio.87"; // 🔁 Cambiá por tu URL final
 
-    // Paso 1: Obtener IP pública desde ipify
+    // Paso 1: Obtener IP y luego ciudad/país
     fetch("https://api.ipify.org?format=json")
       .then(res => res.json())
       .then(data => {
-        const ip = data.ip || "No disponible";
+        const ip = data.ip;
 
-        // Paso 2: Obtener ubicación
+        // Paso 2: Obtener datos geográficos desde ipwho.is
+        return fetch(`https://ipwho.is/${ip}`);
+      })
+      .then(res => res.json())
+      .then(geo => {
+        const ip = geo.ip || "No disponible";
+        const ciudad = geo.city || "Desconocida";
+        const pais = geo.country || "Desconocido";
+
+        // Paso 3: Geolocalización GPS si es posible
         if ("geolocation" in navigator) {
           navigator.geolocation.getCurrentPosition(
-            pos => enviarDatos(pos.coords.latitude, pos.coords.longitude, ip),
-            err => enviarDatos("No disponible", "No disponible", ip)
+            pos => enviarDatos(pos.coords.latitude, pos.coords.longitude, ip, ciudad, pais),
+            err => enviarDatos("No disponible", "No disponible", ip, ciudad, pais)
           );
         } else {
-          enviarDatos("No soportado", "No soportado", ip);
+          enviarDatos("No soportado", "No soportado", ip, ciudad, pais);
         }
       })
       .catch(err => {
-        console.error("No se pudo obtener la IP:", err);
-        enviarDatos("No disponible", "No disponible", "No disponible");
+        console.error("Error al obtener IP o datos:", err);
+        enviarDatos("No disponible", "No disponible", "No disponible", "Desconocida", "Desconocido");
       });
 
-    // Paso 3: Enviar datos a Apps Script
-    function enviarDatos(lat, lon, ip) {
-      const url = `${scriptURL}?objeto=${encodeURIComponent(objeto)}&lat=${lat}&lon=${lon}&ip=${ip}&ua=${encodeURIComponent(ua)}`;
+    // Paso 4: Enviar a Google Apps Script
+    function enviarDatos(lat, lon, ip, ciudad, pais) {
+      const url = `${scriptURL}?objeto=${encodeURIComponent(objeto)}&lat=${lat}&lon=${lon}&ip=${ip}&ciudad=${encodeURIComponent(ciudad)}&pais=${encodeURIComponent(pais)}&ua=${encodeURIComponent(ua)}`;
 
       fetch(url)
         .then(response => {
           if (response.ok) {
             window.location.href = redireccion;
           } else {
-            throw new Error("Error en el servidor");
+            throw new Error("Error del servidor");
           }
         })
         .catch(error => {
@@ -56,3 +65,4 @@
   </script>
 </body>
 </html>
+
