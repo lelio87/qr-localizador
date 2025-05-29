@@ -1,28 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Reportando ubicación...</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Ubicación</title>
 </head>
 <body>
-  <h3>Registrando ubicación, esperá unos segundos...</h3>
+  <h2>Registrando ubicación...</h2>
+
   <script>
     const objeto = new URLSearchParams(window.location.search).get("objeto") || "Desconocido";
     const ua = navigator.userAgent;
-    const endpoint = "https://script.google.com/macros/s/AKfycbyxUzvFi7V3mLnJksvdzkWu7PwKpkYKO378f095xqL6d7zt18gFrZaY7mxZ9MqibrlN/exec"; // Reemplazar
 
-    function redirigir(lat, lon) {
-      const url = `${endpoint}?objeto=${encodeURIComponent(objeto)}&lat=${lat}&lon=${lon}&ua=${encodeURIComponent(ua)}`;
-      window.location.href = url;
-    }
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzghDTpTlh78d1zSpO2vWFDAsJZwnEWBIOtyRl1c8yFHr58pA_wTtMlpz2txrwUpo9z/exec"; // ← Cambiá por tu URL
+    const redireccion = "https://instagram.com/lelio.87"; // ← Cambiá por tu URL
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        pos => redirigir(pos.coords.latitude, pos.coords.longitude),
-        err => redirigir("No disponible", "No disponible")
-      );
-    } else {
-      redirigir("No soportado", "No soportado");
+    // Paso 1: Obtener IP pública desde ipify
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => {
+        const ip = data.ip || "No disponible";
+
+        // Paso 2: Obtener ubicación
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            pos => enviarDatos(pos.coords.latitude, pos.coords.longitude, ip),
+            err => enviarDatos("No disponible", "No disponible", ip)
+          );
+        } else {
+          enviarDatos("No soportado", "No soportado", ip);
+        }
+      })
+      .catch(err => {
+        console.error("No se pudo obtener la IP:", err);
+        enviarDatos("No disponible", "No disponible", "No disponible");
+      });
+
+    // Paso 3: Enviar datos a Apps Script
+    function enviarDatos(lat, lon, ip) {
+      const url = `${scriptURL}?objeto=${encodeURIComponent(objeto)}&lat=${lat}&lon=${lon}&ip=${ip}&ua=${encodeURIComponent(ua)}`;
+
+      fetch(url)
+        .then(response => {
+          if (response.ok) {
+            window.location.href = redireccion;
+          } else {
+            throw new Error("Error en el servidor");
+          }
+        })
+        .catch(error => {
+          console.error("Error al registrar:", error);
+          window.location.href = "https://instagram.com/lelio.87";
+        });
     }
   </script>
 </body>
